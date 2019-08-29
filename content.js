@@ -35,22 +35,26 @@ function skip (start, end, currID) {
   console.log('wewewewewew')
 }
 
-function setValue (times) {
-  chrome.storage.local.set({ vidID: times }, function () {
+function setValue (id, times) {
+  chrome.storage.local.set({ [id]: times }, function () {
     if (chrome.extension.lastError) {
       console.log('An error occured: ' + chrome.extension.lastError.message)
     }
-    console.log('setsetsetset')
+    console.log('set+' + id)
   })
 }
 
-function getValue () {
-  chrome.storage.local.get(['vidID'], function (result) {
-    if (result.vidID) {
-      var start = result.vidID[0]
-      var end = result.vidID[1]
+function getValue (id) {
+  chrome.storage.local.get(id, function (result) {
+    console.log('getvalue+' + id)
+    if (result) {
+        console.log('yeet')
+    }
+    if (result[id]) {
+      var start = result[id][0]
+      var end = result[id][1]
       console.log(start + ' | ' + end)
-      skip(start, end, vidID)
+      skip(start, end, id)
     } else {
       console.log('no data for this vid boi')
     }
@@ -72,8 +76,8 @@ const idCatcher = new MutationObserver(function (mutationsList, observer) {
     } else if (vidID === 'ubrLxJrtcX0') {
       times = [30, 50]
     }
-    setValue(times)
-    getValue()
+    //setValue(vidID, times)
+    getValue(vidID)
   };
 })
 
@@ -89,3 +93,16 @@ const playerCatcher = new MutationObserver(function (mutationList, observer) {
 })
 
 playerCatcher.observe(document, playerConfig)
+
+// autoskip 5-second delay between videos
+var movieplayer = document.getElementById('movie_player')
+const endCatcher = new MutationObserver(function (mutationList, observer) {
+  if (movieplayer.classList.contains('ended-mode')) {
+    injectScript(function () {
+      ytplayer = document.getElementById('movie_player')
+      ytplayer.nextVideo()
+    })
+  }
+})
+
+endCatcher.observe(movieplayer, idConfig)
